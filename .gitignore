@@ -1,0 +1,12 @@
+####
+# Manually configuration:
+####
+.idea/
+venv/
+venv*/
+__pycache__/
+*.pyc
+dist/
+build/
+*.egg-info/
+sphinx/napgen/
