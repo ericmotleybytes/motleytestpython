@@ -5,6 +5,7 @@ import operator
 import datetime
 import random
 import math
+import decimal
 class Tester(unittest.TestCase):
 
     def assert_equal(self,expected,actual,message=None):
@@ -205,6 +206,8 @@ class Tester(unittest.TestCase):
         self.assertFalse("x" in "abc")
         self.assertFalse("b" not in "abc")
         self.assertTrue("x" not in "abc")
+        self.assertTrue("bc" in "abcd")
+        self.assertFalse("bac" in "abcd")
         self.assertTrue("b" in {"a":"apple", "b":"banana"})
         self.assertFalse("x" in {"a":"apple", "b":"banana"})
         self.assertTrue(2 in (1,2,3))
@@ -319,8 +322,116 @@ class Tester(unittest.TestCase):
         self.assert_equal(90.0, math.degrees(math.pi/2))
         self.assert_equal(math.pi/2, math.radians(90))
 
-    def test_str_concat(self):
+    def test_number_formatting(self):
+        self.assert_equal("  42.00",format(41.99999,"7.2f"))
+        self.assert_equal(" -42.00",format(-41.99999,"7.2f"))
+        self.assert_equal("42.00",format(41.99999,".2f"))
+        self.assert_equal("-42.00",format(-41.99999,".2f"))
+        self.assert_equal(" 1.234e+03",format(1234,"10.3e"))
+        self.assert_equal(" 1.234E+03",format(1234,"10.3E"))
+        self.assert_equal("1.234E+03",format(1234,".3E"))
+        self.assert_equal("1,234.12",format(1234.1234,",.2f"))
+        self.assert_equal(" 12.35%",format(0.123456,"7.2%"))
+        self.assert_equal("12.35% ",format(0.123456,"<7.2%"))
+        self.assert_equal(" 42",format(42,"3d"))
+
+    def test_infinity(self):
+        self.assert_equal("inf",str(float('inf')))
+        self.assert_equal("-inf",str(float('-inf')))
+        self.assert_equal("Infinity",str(decimal.Decimal("Infinity")))
+        self.assert_equal("-Infinity",str(decimal.Decimal("-Infinity")))
+
+    def test_strings(self):
         self.assert_equal("abcxyz","abc"+"xyz")
+        s = "abcdef"
+        self.assert_equal("c",s[2])
+        self.assert_equal("bcde",s[1:5])
+        self.assert_equal("ef",s[-2:])
+        self.assert_equal("de",s[-3:-1])
+        self.assert_equal(6,len(s))
+        self.assert_equal("abc","   abc   ".strip())
+        self.assert_equal("abc   ","   abc   ".lstrip())
+        self.assert_equal("   abc","   abc   ".rstrip())
+        self.assert_equal("abc","-_abc_-".strip('-_'))
+        self.assert_equal("AbcAbc", "ABCDABCD".replace("BCD","bc"))
+        sa = "hello world".split(" ")
+        self.assert_equal(2,len(sa))
+        self.assert_equal("hello",sa[0])
+        self.assert_equal("world",sa[1])
+
+    def test_string_formatting(self):
+        self.assert_equal("I am 42 next week","I am {} next {}".format(42,"week"))
+        a = {"name":"John", "age":42}
+        self.assert_equal("Today John is 42.","Today {name} is {age}.".format_map(a))
+
+    def test_escape_characters(self):
+        self.assert_equal("aBc","a\102c")
+        self.assert_equal("aBc","a\x42c")
+        self.assert_equal("B",chr(66))
+        self.assert_equal(66,ord("B"))
+        self.assert_equal(66,ord("\102"))
+        self.assert_equal(66,ord("\x42"))
+        self.assert_equal(10,ord("\n"))
+        self.assert_equal(13,ord("\r"))
+        self.assert_equal(9,ord("\t"))
+
+    def test_string_functions(self):
+        self.assert_equal("abcd","AbCd".lower())
+        self.assert_equal('gürzenichstrasse','Gürzenichstraße'.casefold())
+        self.assert_equal("ABCD","AbCd".upper())
+        self.assert_equal("Hello world","hello world".capitalize())
+        self.assert_equal("   cat   ","cat".center(9))
+        self.assert_equal(2,"to be or not to be".count("be"))
+        self.assertTrue("abcdef".endswith("def"))
+        self.assert_equal("a   bc  defg    hi","a\tbc\tdefg\thi".expandtabs(4))
+        self.assert_equal(3,"welcome".find("com"))
+        self.assert_equal(-1,"welcome".find("xxx"))
+        self.assert_equal(3,"welcome".index("com"))
+        try:
+            i = "welcome".index("xxx")
+            self.fail("Unexpected to exception")
+        except ValueError as e:
+            self.assertTrue(True)
+        except:
+            e = sys.exc_info()[0]
+            self.fail("Unexpected exception: " + str(e))
+        self.assertTrue("Hello4".isalnum())
+        self.assertFalse("Hello2!".isalnum())
+        self.assertTrue("Hello".isalpha())
+        self.assertFalse("Hello2".isalpha())
+        self.assertTrue("42".isdecimal())
+        self.assertFalse("42.1".isdecimal())
+        self.assertTrue("42".isdigit())
+        self.assertFalse("42.1".isdigit())
+        self.assertTrue("myvar_42".isidentifier())
+        self.assertFalse("myvar-42".isidentifier())
+        self.assertTrue("myvar".islower())
+        self.assertFalse("myVar".islower())
+        self.assertTrue("42".isnumeric())
+        self.assertFalse("42.1".isnumeric())
+        self.assertTrue("abc".isprintable())
+        self.assertFalse("abc\n".isprintable())
+        self.assertTrue(" \t\n\r".isspace())
+        self.assertFalse("a".isspace())
+        self.assertTrue("Return To Sender".istitle())
+        self.assertFalse("Return to Sender".istitle())
+        self.assertTrue("MYVAR".isupper())
+        self.assertFalse("myVar".isupper())
+        self.assert_equal("aa-bb-cc","-".join(["aa","bb","cc"]))
+        self.assert_equal("dog   ","dog".ljust(6))
+        d = {"a": "123", "b": "456", "c": "789"}
+        s = "abc"
+        result = s.maketrans(d)
+        self.assertDictEqual({97: '123', 98: '456', 99: '789'},result)
+        self.assertTupleEqual(("I could ","eat"," bananas"),"I could eat bananas".partition("eat"))
+        self.assert_equal("aaBBBcc","aabbbcc".replace("b","B"))
+
+    def test_encode_decode(self):
+        sigma = chr(931)
+        s1 = sigma + "xy"
+        b1 = s1.encode('utf-8')
+        s2 = b1.decode('utf-8')
+        self.assertTrue(s1==s2)
 
     @classmethod
     def run_tester(cls):
