@@ -6,6 +6,8 @@ import datetime
 import random
 import math
 import decimal
+import json
+import re
 class Tester(unittest.TestCase):
 
     def assert_equal(self,expected,actual,message=None):
@@ -432,6 +434,26 @@ class Tester(unittest.TestCase):
         b1 = s1.encode('utf-8')
         s2 = b1.decode('utf-8')
         self.assertTrue(s1==s2)
+
+    def test_lambda(self):
+        f = lambda a : a * 2
+        self.assert_equal(6,f(3))
+
+    def test_json(self):
+        json_str = '{ "name":"John", "age":30, "city":"New York"}'
+        dict1 = json.loads(json_str)
+        self.assertDictEqual({"name":"John", "age":30, "city":"New York"},dict1)
+        json_str2 = json.dumps(dict1)
+        self.assertLessEqual(0,json_str2.find("name"))
+        self.assertLessEqual(0,json_str2.find("John"))
+        self.assertLessEqual(0,json_str2.find("city"))
+        self.assertLessEqual(0,json_str2.find("New York"))
+        self.assertLessEqual(0,json_str2.find("age"))
+        self.assertLessEqual(0,json_str2.find("30"))
+
+    def test_regex(self):
+        self.assertIsNotNone(re.search("^.+rain.+$","The rain in Spain"))
+        self.assertIsNone(re.search("^.+Rain.+$","The rain in Spain"))
 
     @classmethod
     def run_tester(cls):
